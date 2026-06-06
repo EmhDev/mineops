@@ -80,15 +80,22 @@ impl CpmEngine {
             let node_id = graph.node_weight(*idx).unwrap().clone();
             
             let mut min_late_start_of_succs: u32 = max_ef;
+            let mut min_es_of_succs: u32 = max_ef;
             
             let has_successors = graph.neighbors_directed(*idx, petgraph::Direction::Outgoing).count() > 0;
 
             if has_successors {
                 for succ_idx in graph.neighbors_directed(*idx, petgraph::Direction::Outgoing) {
                     let succ_id = graph.node_weight(succ_idx).unwrap();
+                    
                     let succ_ls = act_map.get(succ_id).unwrap().late_start.unwrap_or(max_ef);
                     if succ_ls < min_late_start_of_succs {
                         min_late_start_of_succs = succ_ls;
+                    }
+                    
+                    let succ_es = act_map.get(succ_id).unwrap().early_start.unwrap_or(max_ef);
+                    if succ_es < min_es_of_succs {
+                        min_es_of_succs = succ_es;
                     }
                 }
             }
@@ -99,18 +106,6 @@ impl CpmEngine {
             
             // Calculate Floats
             act.total_float = Some(act.late_finish.unwrap() - act.early_finish.unwrap());
-            
-            // Free float requires checking minimum early start of successors
-            let mut min_es_of_succs: u32 = max_ef;
-            if has_successors {
-                for succ_idx in graph.neighbors_directed(*idx, petgraph::Direction::Outgoing) {
-                    let succ_id = graph.node_weight(succ_idx).unwrap();
-                    let succ_es = act_map.get(succ_id).unwrap().early_start.unwrap_or(max_ef);
-                    if succ_es < min_es_of_succs {
-                        min_es_of_succs = succ_es;
-                    }
-                }
-            }
             act.free_float = Some(min_es_of_succs.saturating_sub(act.early_finish.unwrap()));
         }
 
