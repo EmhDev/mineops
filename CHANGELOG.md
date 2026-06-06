@@ -16,7 +16,14 @@ Todas las versiones notables de este proyecto serán documentadas en este archiv
 ### Arreglado
 - Error del compilador de Rust ("Borrow Checker") al calcular las holguras en el *Backward Pass*.
 
-## [Unreleased] - Fase 3.1 Completada
+## [Unreleased] - Fase 3.2 Completada
+
+### Añadido (Fase 3.2: Recursos y Costos)
+- **Diccionario de Recursos:** Creación de componente visual interactivo para visualizar los recursos estándar (Labor, NonLabor, Material).
+- **Asignaciones Masivas:** Generador de `MockData` ahora inyecta entre 1 y 2 recursos aleatorios a cada una de las 10,000 actividades.
+- **Cálculo Dinámico de Costos:** Se agregaron las columnas `Resources` y `Total Cost` a la `ActivityTable`. El costo en $ es calculado en tiempo real basándose en unidades requeridas × la tarifa de cada recurso, manteniendo los 60 FPS de la tabla virtualizada.
+
+## [Anterior] - Fase 3.1 Completada
 
 ### Añadido (Fase 3.1: Calendarios)
 - Soporte para **Calendarios Laborables** en el motor CPM (Rust). Ahora el algoritmo evita agendar tareas en días no laborables (ej. Sábados y Domingos).

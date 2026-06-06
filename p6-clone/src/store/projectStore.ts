@@ -27,10 +27,26 @@ export interface Calendar {
   work_days: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
 }
 
+export interface Resource {
+  id: string;
+  name: string;
+  type: 'Labor' | 'NonLabor' | 'Material';
+  standard_rate: number;
+}
+
+export interface Assignment {
+  id: string;
+  activity_id: string;
+  resource_id: string;
+  planned_units: number;
+}
+
 interface ProjectState {
   activities: Activity[];
   relationships: Relationship[];
   calendars: Calendar[];
+  resources: Resource[];
+  assignments: Assignment[];
   isCalculating: boolean;
   loadMockData: () => void;
   calculateCPM: () => Promise<void>;
@@ -45,12 +61,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     name: "Standard 5-Day Workweek",
     work_days: [true, true, true, true, true, false, false],
   }],
+  resources: [],
+  assignments: [],
   isCalculating: false,
 
   loadMockData: () => {
+    // Generar 5 Recursos
+    const mockResources: Resource[] = [
+      { id: 'R1', name: 'Project Manager', type: 'Labor', standard_rate: 100 },
+      { id: 'R2', name: 'Software Engineer', type: 'Labor', standard_rate: 80 },
+      { id: 'R3', name: 'QA Tester', type: 'Labor', standard_rate: 60 },
+      { id: 'R4', name: 'Server Instance', type: 'NonLabor', standard_rate: 10 },
+      { id: 'R5', name: 'Software License', type: 'Material', standard_rate: 500 },
+    ];
+
     // Generar un mock de 10,000 actividades para probar el rendimiento
     const acts: Activity[] = [];
     const rels: Relationship[] = [];
+    const assigns: Assignment[] = [];
     
     // Crear cadena simple A -> B -> C...
     for (let i = 0; i < 10000; i++) {
@@ -75,9 +103,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           lag: 0,
         });
       }
+
+      // Asignar aleatoriamente 1 o 2 recursos a cada actividad
+      const numAssigns = Math.floor(Math.random() * 2) + 1;
+      for(let j=0; j<numAssigns; j++) {
+        const resId = `R${Math.floor(Math.random() * 5) + 1}`;
+        assigns.push({
+          id: `AS_${i}_${j}`,
+          activity_id: `A${i}`,
+          resource_id: resId,
+          planned_units: Math.floor(Math.random() * 40) + 8, // Entre 8 y 48 horas/unidades
+        });
+      }
     }
 
-    set({ activities: acts, relationships: rels });
+    set({ activities: acts, relationships: rels, resources: mockResources, assignments: assigns });
   },
 
   calculateCPM: async () => {
