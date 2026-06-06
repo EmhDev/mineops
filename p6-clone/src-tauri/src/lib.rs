@@ -1,4 +1,5 @@
 pub mod cpm;
+pub mod grpc;
 
 use cpm::models::{Activity, Relationship, Calendar};
 use cpm::engine::CpmEngine;

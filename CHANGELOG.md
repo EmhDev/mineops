@@ -16,7 +16,15 @@ Todas las versiones notables de este proyecto serán documentadas en este archiv
 ### Arreglado
 - Error del compilador de Rust ("Borrow Checker") al calcular las holguras en el *Backward Pass*.
 
-## [Unreleased] - Fase 4 Completada
+## [Unreleased] - Fase 5 Completada
+
+### Añadido (Fase 5: Arquitectura de Servidor gRPC)
+- **Definición de Esquemas `.proto`:** Nuevo archivo `cpm.proto` que expone los mensajes `ActivityMessage`, `RelationshipMessage`, `CalendarMessage` y el servicio universal `RunCpm`.
+- **Servidor Headless Asíncrono:** Usando `tokio` y `tonic`, el binario de la aplicación ahora arranca un servidor gRPC en el puerto `50051` en segundo plano cada vez que se abre MineSight. 
+- **Compatibilidad Extrema:** Este motor headless permite inyectar cronogramas gigantes desde scripts Python o microservicios, procesar el algoritmo CPM de MineSight y devolver los resultados estructurados sin tocar la interfaz gráfica (Tauri).
+- **Auto-compilación de Protobufs:** Se integró el crate `protoc-bin-vendored` en `build.rs` para asegurar la compilación transparente del archivo `.proto` a binarios nativos de Rust en entornos Windows (y otros OS) sin requerir instalación manual de dependencias de Google.
+
+## [Anterior] - Fase 4 Completada
 
 ### Añadido (Fase 4: Relaciones Visuales y UX)
 - **Edición en Línea:** Las actividades en la tabla ahora permiten editar su nombre directamente haciendo clic en ellas (comportamiento tipo Excel), guardándose instantáneamente en el store global.

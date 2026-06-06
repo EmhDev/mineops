@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package cpm;
+
+message CalendarMessage {
+    string id = 1;
+    string name = 2;
+    repeated bool work_days = 3;
+}
+
+message ActivityMessage {
+    string id = 1;
+    string name = 2;
+    uint32 duration = 3;
+    optional string calendar_id = 4;
+    
+    // Output fields
+    optional uint32 early_start = 5;
+    optional uint32 early_finish = 6;
+    optional uint32 late_start = 7;
+    optional uint32 late_finish = 8;
+    optional uint32 total_float = 9;
+    optional uint32 free_float = 10;
+}
+
+message RelationshipMessage {
+    string source_id = 1;
+    string target_id = 2;
+    string rel_type = 3; // "FS", "SS", "FF", "SF"
+    uint32 lag = 4;
+}
+
+message CpmRequest {
+    repeated ActivityMessage activities = 1;
+    repeated RelationshipMessage relationships = 2;
+    repeated CalendarMessage calendars = 3;
+}
+
+message CpmResponse {
+    repeated ActivityMessage activities = 1;
+}
+
+service CpmService {
+    rpc RunCpm (CpmRequest) returns (CpmResponse);
+}
