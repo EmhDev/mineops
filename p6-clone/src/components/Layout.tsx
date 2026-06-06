@@ -1,6 +1,7 @@
 import React from 'react';
 import { Play, Save, Settings, FolderOpen } from 'lucide-react';
 import { useProjectStore } from '../store/projectStore';
+import { CalendarManager } from './CalendarManager';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { loadMockData, calculateCPM, isCalculating } = useProjectStore();
@@ -22,8 +23,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </button>
         </div>
         <div className="flex items-center space-x-2">
-          <button className="p-2 hover:bg-p6border rounded"><Save size={18} /></button>
-          <button className="p-2 hover:bg-p6border rounded"><Settings size={18} /></button>
+          <CalendarManager />
+          <button className="p-2 hover:bg-p6border rounded text-gray-300"><Save size={18} /></button>
+          <button className="p-2 hover:bg-p6border rounded text-gray-300"><Settings size={18} /></button>
         </div>
       </header>
       

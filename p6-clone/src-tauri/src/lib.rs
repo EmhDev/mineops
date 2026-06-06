@@ -1,11 +1,11 @@
 pub mod cpm;
 
-use cpm::models::{Activity, Relationship};
+use cpm::models::{Activity, Relationship, Calendar};
 use cpm::engine::CpmEngine;
 
 #[tauri::command]
-fn calculate_cpm(activities: Vec<Activity>, relationships: Vec<Relationship>) -> Result<Vec<Activity>, String> {
-    let mut engine = CpmEngine::new(activities, relationships);
+fn calculate_cpm(activities: Vec<Activity>, relationships: Vec<Relationship>, calendars: Vec<Calendar>) -> Result<Vec<Activity>, String> {
+    let mut engine = CpmEngine::new(activities, relationships, calendars);
     engine.calculate()
 }
 

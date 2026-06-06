@@ -1,18 +1,73 @@
-use crate::cpm::models::{Activity, Relationship, RelType};
+use crate::cpm::models::{Activity, Relationship, RelType, Calendar};
 use petgraph::graph::{DiGraph, NodeIndex};
 use std::collections::HashMap;
 
 pub struct CpmEngine {
     activities: Vec<Activity>,
     relationships: Vec<Relationship>,
+    calendars: HashMap<String, Calendar>,
 }
 
 impl CpmEngine {
-    pub fn new(activities: Vec<Activity>, relationships: Vec<Relationship>) -> Self {
+    pub fn new(activities: Vec<Activity>, relationships: Vec<Relationship>, cals: Vec<Calendar>) -> Self {
+        let mut calendars = HashMap::new();
+        // Insert default calendar
+        calendars.insert("DEFAULT".to_string(), Calendar::default());
+        
+        for c in cals {
+            calendars.insert(c.id.clone(), c);
+        }
+
         CpmEngine {
             activities,
             relationships,
+            calendars,
         }
+    }
+
+    fn add_working_days(&self, start_day: u32, duration: u32, cal_id: &Option<String>) -> u32 {
+        if duration == 0 { return start_day; }
+        
+        let default_cal = Calendar::default();
+        let cal = cal_id.as_ref()
+            .and_then(|id| self.calendars.get(id))
+            .unwrap_or(&default_cal);
+
+        let mut current_day = start_day;
+        let mut days_added = 0;
+
+        // Skip initial non-working days if we are starting a task
+        while !cal.work_days[(current_day % 7) as usize] {
+            current_day += 1;
+        }
+
+        while days_added < duration {
+            current_day += 1;
+            if cal.work_days[(current_day % 7) as usize] {
+                days_added += 1;
+            }
+        }
+        current_day
+    }
+
+    fn subtract_working_days(&self, end_day: u32, duration: u32, cal_id: &Option<String>) -> u32 {
+        if duration == 0 { return end_day; }
+        
+        let default_cal = Calendar::default();
+        let cal = cal_id.as_ref()
+            .and_then(|id| self.calendars.get(id))
+            .unwrap_or(&default_cal);
+
+        let mut current_day = end_day;
+        let mut days_subtracted = 0;
+
+        while days_subtracted < duration && current_day > 0 {
+            current_day -= 1;
+            if cal.work_days[(current_day % 7) as usize] {
+                days_subtracted += 1;
+            }
+        }
+        current_day
     }
 
     pub fn calculate(&mut self) -> Result<Vec<Activity>, String> {
@@ -63,7 +118,7 @@ impl CpmEngine {
 
             let act = act_map.get_mut(&node_id).unwrap();
             act.early_start = Some(max_early_finish_of_preds);
-            act.early_finish = Some(max_early_finish_of_preds + act.duration);
+            act.early_finish = Some(self.add_working_days(max_early_finish_of_preds, act.duration, &act.calendar_id));
         }
 
         // 4. Backward Pass (LS, LF)
@@ -102,10 +157,10 @@ impl CpmEngine {
 
             let act = act_map.get_mut(&node_id).unwrap();
             act.late_finish = Some(min_late_start_of_succs);
-            act.late_start = Some(min_late_start_of_succs.saturating_sub(act.duration));
+            act.late_start = Some(self.subtract_working_days(min_late_start_of_succs, act.duration, &act.calendar_id));
             
-            // Calculate Floats
-            act.total_float = Some(act.late_finish.unwrap() - act.early_finish.unwrap());
+            // Calculate Floats (in calendar days for now, P6 calculates float in working days but this is a start)
+            act.total_float = Some(act.late_finish.unwrap().saturating_sub(act.early_finish.unwrap()));
             act.free_float = Some(min_es_of_succs.saturating_sub(act.early_finish.unwrap()));
         }
 
@@ -139,7 +194,7 @@ mod tests {
             Relationship { source_id: "B".to_string(), target_id: "C".to_string(), rel_type: RelType::FS, lag: 0 },
         ];
 
-        let mut engine = CpmEngine::new(acts, rels);
+        let mut engine = CpmEngine::new(acts, rels, vec![]);
         let result = engine.calculate().unwrap();
 
         let a = result.iter().find(|x| x.id == "A").unwrap();

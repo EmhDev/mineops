@@ -7,10 +7,28 @@ pub struct Project {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Calendar {
+    pub id: String,
+    pub name: String,
+    pub work_days: [bool; 7], // Indice 0 = Lunes, 6 = Domingo
+}
+
+impl Default for Calendar {
+    fn default() -> Self {
+        Calendar {
+            id: "DEFAULT".to_string(),
+            name: "Standard 5-Day Workweek".to_string(),
+            work_days: [true, true, true, true, true, false, false], // Lun-Vie laborables
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Activity {
     pub id: String,
     pub name: String,
     pub duration: u32,
+    pub calendar_id: Option<String>,
     
     // Calculated CPM values
     pub early_start: Option<u32>,

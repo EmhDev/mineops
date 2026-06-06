@@ -16,7 +16,15 @@ Todas las versiones notables de este proyecto serán documentadas en este archiv
 ### Arreglado
 - Error del compilador de Rust ("Borrow Checker") al calcular las holguras en el *Backward Pass*.
 
-## [Unreleased] - Fase 2 Completada
+## [Unreleased] - Fase 3.1 Completada
+
+### Añadido (Fase 3.1: Calendarios)
+- Soporte para **Calendarios Laborables** en el motor CPM (Rust). Ahora el algoritmo evita agendar tareas en días no laborables (ej. Sábados y Domingos).
+- Métodos auxiliares `add_working_days` y `subtract_working_days` en `engine.rs` para cálculos precisos basados en horas/días laborables reales.
+- El Frontend ahora inyecta dinámicamente el calendario "Estándar de 5 Días" por defecto a cada tarea generada.
+- Componente `CalendarManager.tsx` añadido a la barra superior, permitiendo visualizar los días laborables de los calendarios disponibles en el proyecto.
+
+## [Anterior] - Fase 2 Completada
 
 ### Añadido (Fase 2)
 - Integración de **Tailwind CSS** para una interfaz moderna en Modo Oscuro.

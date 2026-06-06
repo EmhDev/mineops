@@ -5,6 +5,7 @@ export interface Activity {
   id: string;
   name: string;
   duration: number;
+  calendar_id: string | null;
   early_start: number | null;
   early_finish: number | null;
   late_start: number | null;
@@ -20,9 +21,16 @@ export interface Relationship {
   lag: number;
 }
 
+export interface Calendar {
+  id: string;
+  name: string;
+  work_days: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
+}
+
 interface ProjectState {
   activities: Activity[];
   relationships: Relationship[];
+  calendars: Calendar[];
   isCalculating: boolean;
   loadMockData: () => void;
   calculateCPM: () => Promise<void>;
@@ -32,6 +40,11 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>((set, get) => ({
   activities: [],
   relationships: [],
+  calendars: [{
+    id: "DEFAULT",
+    name: "Standard 5-Day Workweek",
+    work_days: [true, true, true, true, true, false, false],
+  }],
   isCalculating: false,
 
   loadMockData: () => {
@@ -45,6 +58,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         id: `A${i}`,
         name: `Task ${i}`,
         duration: Math.floor(Math.random() * 5) + 1,
+        calendar_id: "DEFAULT",
         early_start: null,
         early_finish: null,
         late_start: null,
@@ -67,7 +81,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   calculateCPM: async () => {
-    const { activities, relationships } = get();
+    const { activities, relationships, calendars } = get();
     set({ isCalculating: true });
     
     try {
@@ -75,6 +89,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const updatedActivities = await invoke<Activity[]>('calculate_cpm', {
         activities,
         relationships,
+        calendars,
       });
       const end = performance.now();
       console.log(`CPM Calculated in ${end - start} ms`);
