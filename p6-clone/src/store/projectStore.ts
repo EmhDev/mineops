@@ -51,6 +51,7 @@ interface ProjectState {
   loadMockData: () => void;
   calculateCPM: () => Promise<void>;
   updateDuration: (id: string, newDuration: number) => void;
+  updateName: (id: string, newName: string) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -145,6 +146,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set((state) => ({
       activities: state.activities.map(act => 
         act.id === id ? { ...act, duration: newDuration } : act
+      )
+    }));
+  },
+
+  updateName: (id: string, newName: string) => {
+    set((state) => ({
+      activities: state.activities.map(act => 
+        act.id === id ? { ...act, name: newName } : act
       )
     }));
   }

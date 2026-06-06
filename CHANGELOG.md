@@ -16,7 +16,15 @@ Todas las versiones notables de este proyecto serán documentadas en este archiv
 ### Arreglado
 - Error del compilador de Rust ("Borrow Checker") al calcular las holguras en el *Backward Pass*.
 
-## [Unreleased] - Fase 3.2 Completada
+## [Unreleased] - Fase 4 Completada
+
+### Añadido (Fase 4: Relaciones Visuales y UX)
+- **Edición en Línea:** Las actividades en la tabla ahora permiten editar su nombre directamente haciendo clic en ellas (comportamiento tipo Excel), guardándose instantáneamente en el store global.
+- **Relaciones (Flechas) en Gantt:** El motor Canvas del Diagrama de Gantt ahora procesa la lista global de dependencias (relaciones Finish-to-Start) y dibuja conexiones ortogonales (codos) de forma dinámica entre el fin de la predecesora y el inicio de la sucesora.
+- **Optimización Extrema de Renderizado:** El algoritmo del Canvas pre-calcula geometrías en memoria y filtra las flechas, dibujando únicamente las líneas cuyas barras origen o destino se encuentran actualmente visibles en el Viewport, permitiendo hacer scroll a través de 10,000 flechas a 60 FPS fijos.
+- **Diferenciación Visual:** Las relaciones que conectan tareas críticas se renderizan en Rojo, mientras que las relaciones no críticas se dibujan en Azul claro.
+
+## [Anterior] - Fase 3.2 Completada
 
 ### Añadido (Fase 3.2: Recursos y Costos)
 - **Diccionario de Recursos:** Creación de componente visual interactivo para visualizar los recursos estándar (Labor, NonLabor, Material).

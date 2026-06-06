@@ -6,7 +6,7 @@ interface GanttChartProps {
 }
 
 export const GanttChart: React.FC<GanttChartProps> = ({ scrollRef }) => {
-  const { activities } = useProjectStore();
+  const { activities, relationships } = useProjectStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -38,24 +38,70 @@ export const GanttChart: React.FC<GanttChartProps> = ({ scrollRef }) => {
         ctx.stroke();
       }
 
-      // Dibujar barras del Gantt virtualizadas
+      // Obtener qué tareas se deben renderizar en el viewport
       const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - 5);
       const endIndex = Math.min(activities.length, startIndex + Math.ceil(height / rowHeight) + 10);
 
-      for(let i=startIndex; i<endIndex; i++) {
+      // Pre-calcular geometrías para facilitar el dibujado de líneas
+      const actGeom = new Map<string, {x: number, y: number, w: number, i: number, critical: boolean}>();
+      for(let i=0; i<activities.length; i++) {
         const act = activities[i];
         if (act.early_start !== null && act.early_finish !== null) {
-          const y = (i * rowHeight) - scrollTop + 8; // 8px de margen para centrar en la fila
+          const y = (i * rowHeight) - scrollTop + 8;
           const x = act.early_start * timeScale;
           const w = (act.early_finish - act.early_start) * timeScale;
-          
-          const isCritical = act.total_float === 0;
+          actGeom.set(act.id, { x, y, w: Math.max(w, 4), i, critical: act.total_float === 0 });
+        }
+      }
 
-          // Color crítico (Rojo) o Normal (Azul)
-          ctx.fillStyle = isCritical ? '#f87171' : '#3b82f6';
-          
+      // 1. Dibujar Líneas de Dependencia (Debajo de las barras)
+      ctx.lineWidth = 1.5;
+      for (const rel of relationships) {
+         const source = actGeom.get(rel.source_id);
+         const target = actGeom.get(rel.target_id);
+         if (source && target) {
+            // Optimización: Solo dibujar si alguna de las dos barras es visible
+            const isSourceVisible = source.i >= startIndex && source.i <= endIndex;
+            const isTargetVisible = target.i >= startIndex && target.i <= endIndex;
+            
+            if (isSourceVisible || isTargetVisible) {
+               // Color rojo si ambas tareas son críticas, azul si no
+               ctx.strokeStyle = (source.critical && target.critical) ? '#f87171' : '#60a5fa';
+               
+               // Línea Ortogonal (Finish-to-Start)
+               const startX = source.x + source.w;
+               const startY = source.y + 8; // Centro de la barra (alto es 16)
+               const endX = target.x;
+               const endY = target.y + 8;
+               
+               ctx.beginPath();
+               ctx.moveTo(startX, startY);
+               // Mover a la derecha
+               const cornerX = startX + 5;
+               ctx.lineTo(cornerX, startY);
+               // Bajar/Subir hasta el objetivo Y
+               ctx.lineTo(cornerX, endY);
+               // Mover a la derecha hasta el objetivo X
+               ctx.lineTo(endX, endY);
+               
+               // Dibujar la punta de flecha simple
+               ctx.lineTo(endX - 4, endY - 4);
+               ctx.moveTo(endX, endY);
+               ctx.lineTo(endX - 4, endY + 4);
+               
+               ctx.stroke();
+            }
+         }
+      }
+
+      // 2. Dibujar Barras del Gantt virtualizadas (Encima de las líneas)
+      for(let i=startIndex; i<endIndex; i++) {
+        const act = activities[i];
+        const geom = actGeom.get(act.id);
+        if (geom) {
+          ctx.fillStyle = geom.critical ? '#f87171' : '#3b82f6';
           ctx.beginPath();
-          ctx.roundRect(x, y, Math.max(w, 4), 16, 4); // mínimo 4px de ancho para visualizar tareas de duración 0
+          ctx.roundRect(geom.x, geom.y, geom.w, 16, 4);
           ctx.fill();
         }
       }

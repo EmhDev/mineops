@@ -8,7 +8,7 @@ interface ActivityTableProps {
 }
 
 export const ActivityTable: React.FC<ActivityTableProps> = ({ onScroll, scrollRef }) => {
-  const { activities, updateDuration, resources, assignments } = useProjectStore();
+  const { activities, updateDuration, updateName, resources, assignments } = useProjectStore();
 
   const dataMap = React.useMemo(() => {
     const costMap = new Map<string, number>();
@@ -77,7 +77,14 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ onScroll, scrollRe
                 }}
               >
                 <div className="w-20 font-mono text-gray-400">{act.id}</div>
-                <div className="w-48 truncate pr-2">{act.name}</div>
+                <div className="w-48 pr-2">
+                  <input 
+                    type="text" 
+                    className="w-full bg-transparent text-left border border-transparent hover:border-gray-500 focus:border-p6accent focus:outline-none rounded truncate"
+                    value={act.name}
+                    onChange={(e) => updateName(act.id, e.target.value)}
+                  />
+                </div>
                 <div className="w-20 text-center">
                   <input 
                     type="number" 
